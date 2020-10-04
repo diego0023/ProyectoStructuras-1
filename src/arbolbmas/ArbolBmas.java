@@ -21,13 +21,17 @@ public class ArbolBmas {
         Scanner entrada= new Scanner(System.in);
          BPlusTree tree =  new BPlusTree(3);
          String nombre;
+         int clave;
          int key=0;
          int op;
          boolean salir=false;
          while (salir==false) {            
              System.out.println("1)ingresar");
              System.out.println("2)ver"); 
-             System.out.println("3)salir");
+             System.out.println("3)altura");
+             System.out.println("4)nivel de un nodo");
+             //eliminar y buscar clave(ya esta) nombre
+             System.out.println("5)salir");
              System.out.print("eliga una opcion");
              op=Integer.parseInt(entrada.nextLine());
              switch(op){
@@ -43,7 +47,15 @@ public class ArbolBmas {
                          System.out.println(aux.get(i));
                      }
                      break;
-                  case 3:
+                 case 3:
+                     tree.height();
+                     break;
+                 case 4:
+                      System.out.println("ingrese la clave a buscar");
+                      clave=Integer.parseInt(entrada.nextLine());
+                      tree.leve(clave);
+                     break;
+                  case 5:
                       salir=true;
                      break;
                  default:

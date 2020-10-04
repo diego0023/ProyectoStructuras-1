@@ -19,7 +19,7 @@ public class DictionaryPair  implements Comparable<DictionaryPair> {
       this.key = key;
       this.value = value;
     }
-    //se compara y si la clave es mayor regresa 1 si no -1
+    //se compara y si la clave es mayor regresa 1 si no -1(metodo burbuja)
     public int compareTo(DictionaryPair o) {
       if (key == o.key) {
         return 0;

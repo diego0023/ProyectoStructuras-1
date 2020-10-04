@@ -387,6 +387,77 @@ public class BPlusTree {
 
     return values;
   }
+    
+    public void height(){
+       int altura=1;
+        if (root==null) {
+            if (firstLeaf==null) {
+                System.out.println(" EL ARBOL NO TIENE NADA");
+            }else{
+                System.out.println("LA ALTURA ES: " + altura);
+            }
+        }else{
+              Node aux= this.firstLeaf.parent;
+            while(aux!=null){
+                altura++;
+                aux=aux.parent;
+            }
+            
+            System.out.println("LA ALTURA ES: " + altura);
+            
+           
+        }
+    
+    
+    }
+    public void leve(int key){
+        System.out.println("el nivel de: " + key+ " es: "+ getLevel(key,1));
+    
+    }
+    
+    private int getLevel(int key, int lv){
+        //buscar si se encuentra en la raiz
+        Integer[] keys =this.root.keys;
+        int i;
+        
+        for ( i = 0; i < this.root.degree-1; i++) {
+            if (key==keys[i]) {
+                return lv;
+            }else if (key<keys[i]) {
+                break;//si en la raiz hay una clave mayor se rompe el ciclo 
+            }
+        }
+       Node child = this.root.childPointers[i];
+      if (child instanceof LeafNode) {
+        return lv+1;
+        } else {
+      return getLevel((InternalNode) child, key, (lv+1));
+     }  
+    
+    }
+    
+    private int getLevel(InternalNode node, int key,int lv){
+       Integer[] keys = node.keys;
+        int i;
+         for (i = 0; i < node.degree - 1; i++) {
+              if (key==keys[i]) {
+                return lv;
+            }else if (key<keys[i]) {
+                break;//si en la raiz hay una clave mayor se rompe el ciclo 
+            }
+          
+        }
+         Node childNode = node.childPointers[i];
+         if (childNode instanceof LeafNode) {
+        return lv+1;
+        } else {
+      return getLevel((InternalNode) node.childPointers[i], key,(lv+1));
+     }
+         
+         
+     }
+        
+    
 
     public BPlusTree(int m) {
     this.m = m;
