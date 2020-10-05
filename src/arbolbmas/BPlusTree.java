@@ -388,6 +388,32 @@ public class BPlusTree {
     return values;
   }
     
+    public int searchName(String value){
+         LeafNode currNode = this.firstLeaf;
+         while (currNode != null) {            
+              DictionaryPair dps[] = currNode.dictionary;
+              for (int i = 0; i < dps.length-1; i++) {
+                  if (value== dps[i].value) {
+                      return dps[i].key;
+                  }
+             }
+              currNode=currNode.leftSibling;
+             
+        }
+        return -1;
+    }
+    
+    public void print(){
+     LeafNode currNode = this.firstLeaf;
+         while (currNode != null) {            
+              DictionaryPair dps[] = currNode.dictionary;
+              for (int i = 0; i < dps.length-1; i++) {
+                  System.out.println("clave: "+ dps[i].key);
+                  System.out.println("nombre: "+ dps[i].value);
+             }
+              currNode=currNode.leftSibling;
+        }
+    }
     public void height(){
        int altura=1;
         if (root==null) {
