@@ -55,7 +55,16 @@ public class ArbolBmas {
                     
                      break;
                  case 2:
-                    tree.print();
+                 System.out.println("1) solo hojas");
+                 System.out.println("2) todo el arbol");
+                 op=Integer.parseInt(entrada.nextLine());
+                 if (op==1) {
+                     tree.print();
+                 }else if(op==2){
+                     tree.printTree();
+                 }else{
+                     System.out.println("opcion no valida");
+                 }
                      break;
                  case 3:
                      

@@ -463,7 +463,7 @@ public class BPlusTree {
         while (currNode != null) {
             DictionaryPair dps[] = currNode.dictionary;
             for (int i = 0; i < dps.length - 1; i++) {
-                if (value == dps[i].value) {
+                if (value.equals(dps[i].value)) {
                     return dps[i].key;
                 }
             }
@@ -482,6 +482,81 @@ public class BPlusTree {
             }
             currNode = currNode.rightSibling;
         }
+    }
+    public void printTree(){
+        if (root==null) {//el arbol solo tiene un nivel
+            System.out.println(pritLeaf(this.firstLeaf));
+            
+        }else{
+            System.out.println(pritInternal(root));
+             Node childNode = root.childPointers[0];
+             if (childNode instanceof LeafNode) {
+                 System.out.println(printLeaf((LeafNode)childNode));
+            }else{
+                 //el hijo es interno
+                 reTree(childNode);
+                 
+             }
+             
+            
+        }
+    
+    
+    }
+    private void reTree(Node x){
+        
+         if (x instanceof LeafNode) {
+                 System.out.println(printLeaf((LeafNode)x));
+            }else{
+                 //el hijo es interno
+                Node aux= printInternal((InternalNode)x);
+                 
+                reTree(aux);
+                 
+             }
+    }
+    
+    private String printLeaf(LeafNode sheet){
+        String cadena="";
+         LeafNode currNode = sheet;
+        while(currNode!=null){
+            cadena= cadena + pritLeaf(currNode);
+            currNode=currNode.rightSibling;
+        }  
+    return cadena;
+    }
+    
+    private String pritLeaf( LeafNode sheet){
+     String cadena="[";
+      DictionaryPair dps[] = sheet.dictionary;
+        for (int i = 0; i < sheet.numPairs; i++) {
+            cadena=cadena+ dps[i].key + "|" + dps[i].value + ","; 
+        }
+        
+        return cadena=cadena+ "]";
+    }
+    
+    private Node printInternal(InternalNode internal){
+        String cadena="";
+        InternalNode currNode=internal;
+        while(currNode!=null){
+           cadena= cadena + pritInternal(currNode);
+           currNode=currNode.rightSibling;
+        }
+        
+        Node childNode = internal.childPointers[0];
+        System.out.println(cadena);
+        return childNode;
+
+    }
+    
+    private String pritInternal (InternalNode internal){
+        String cadena="[";
+        Integer[] key= internal.keys;
+        for (int i = 0; i < internal.degree; i++) {
+            cadena=cadena + key[i] + ",";
+        }
+        return cadena=cadena+ "]";
     }
 
     public int height() {
