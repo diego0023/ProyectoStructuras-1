@@ -24,6 +24,8 @@ public class LeafNode extends Node{
       this.dictionary[index] = null;
       numPairs--;
     }
+    //
+    
     //inserta un valor
     public boolean insert(DictionaryPair dp) {
       if (this.isFull()) {//revisa no esta llena la hoja

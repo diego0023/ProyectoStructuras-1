@@ -25,7 +25,7 @@ public class ArbolBmas {
              System.out.println("4)NIVEL");
              System.out.println("5)BUSCAR CLAVE");
              System.out.println("6)BUSCAR NOMBRE");
-             System.out.println("7)ELIMINAR");//este aun no existe
+             System.out.println("7)ELIMINAR");//no existe, tal vez no exista nunca
              System.out.println("8)SALIR");
              System.out.print("eliga una opcion");
     
@@ -59,7 +59,7 @@ public class ArbolBmas {
                      break;
                  case 3:
                      
-                     tree.height();
+                     System.out.println("LA ALTURA ES: "+tree.height());
                      break;
                  case 4:
                       System.out.println("ingrese la clave a buscar");
@@ -87,6 +87,10 @@ public class ArbolBmas {
                      break;
                  case 7: 
                      System.out.println("se supone que eliminara");
+                     System.out.println("Ingreese la clave a buscar");
+                     clave=Integer.parseInt(entrada.nextLine());
+                     tree.otro(clave);
+                     
                      break;
                   case 8:
                       salir=true;
