@@ -53,7 +53,7 @@ public class BPlusTree {
     }
     ///pruebas
 
-    public void otro(int key) {
+    public void otro(int key,int nivel) {
         LeafNode ln = (this.root == null) ? this.firstLeaf : findLeafNode(key);
         ///ELIMINAR CASO 1
         if (isHoja(ln, key) == true) {
@@ -65,24 +65,99 @@ public class BPlusTree {
                 ln.delete(index);
                 sortDictionary(dps);
                 System.out.println("Eliminado, era hoja normal");
-            } else {
+            } else if(ln.numPairs == (ln.minNumPairs) + 1){
                 //primero eliminar llave
                 ln.delete(index);
                 sortDictionary(dps);
                 //ver si tiene hermano derecho o izquierdo
-                if (ln.rightSibling!=null) {
-                    susSimple(ln.rightSibling,ln);
+                if ((ln.rightSibling != null)&&(ln.parent==ln.rightSibling.parent)) {
+                    susSimple(ln.rightSibling, ln);
+                } else {
+                    susSimple(ln.rightSibling, ln);
                 }
-                else{susSimple(ln.rightSibling,ln);}
                 System.out.println("Eliminado, con sustitucion");
 
+            }else if (ln.numPairs < (ln.minNumPairs) + 1) {
+                System.out.println("todavia no existe ese metodo");
             }
+            
+        } //CASO 2
+        else if ((isHoja(ln, key) == false) && (ln.numPairs >= ln.minNumPairs + 1)) {
+            if ((ln.numPairs > ln.minNumPairs + 1)&&(nivel>1)) {
+                System.out.println("keys: " + ln.numPairs);
+                //eliminar llave
+                DictionaryPair[] dps = ln.dictionary;
+                int index = binarySearch(dps, ln.numPairs, key);
+                ln.delete(index);
+                sortDictionary(dps);
+                //sustituir key que tambien esta en internal node por la siguiente del eliminar en LeafNode
+                InternalNode parent2 = ln.parent;
+                parent2.sustituirKey(key, dps[0].key);
+
+            } else if (ln.numPairs == (ln.minNumPairs) + 1) {
+                //eliminar llave
+                DictionaryPair[] dps = ln.dictionary;
+
+                //
+                eliminar2_2(ln, key, dps);
+            }else if ((ln.numPairs > ln.minNumPairs + 1)&&(nivel==1)) {
+                System.out.println("todavia no existe ese metodo");
+                //eliminar llave
+//                DictionaryPair[] dps = ln.dictionary;
+//                int index = binarySearch(dps, ln.numPairs, key);
+//                ln.delete(index);
+//                sortDictionary(dps);
+//                //
+//                handleDeficiency(ln.parent);
+            }
+
+        }else if ((isHoja(ln, key) == false) && (ln.numPairs < ln.minNumPairs + 1)) {
+            System.out.println("todavia no existe ese metodo");
         }
         ////////////////////////////////////////
 
     }
 
-    public void susSimple(LeafNode hermano,LeafNode aux) {
+    public void eliminar2_2(LeafNode ln, int key, DictionaryPair[] dpsLn) {
+        //este elimaniar se utiliza cuando la llave a eliminar tiene nodo interno 
+        //y el numPairs == minNumPairs
+        LeafNode aux1 = ln.leftSibling;
+        if ((aux1.numPairs > aux1.minNumPairs + 1) && (aux1.parent == ln.parent)) {// si el hermano izquierdo puede prestar y vienen del mismo padre
+            System.out.println("presto izquierdo");
+            DictionaryPair[] dpsHermano = aux1.dictionary;//guarda diccionario de hermano
+            InternalNode parent2 = ln.parent;//guarda padre
+            parent2.sustituirKey(key, dpsHermano[aux1.numPairs - 1].key);//sustituye en el padre la llave que se quiere borrar por el ultimo key del hermano
+            //
+            dpsLn[0] = dpsHermano[aux1.numPairs - 1];//el lugar que quedo donde se elimino el leafNode aora es igual al ultimo del hermano ozquierdo
+            //Ahora se debe borrar el ultimo key del nodo del  que se presto es decir el hermano izquierdo
+            int indexH = binarySearch(dpsHermano, aux1.numPairs, dpsHermano[aux1.numPairs - 1].key);//guarda el index del key para borrar
+            aux1.delete(indexH);//borra key
+            sortDictionary(dpsHermano);//ordena arreglo de nodos
+        } else {
+            //SI SE TIENE QUE PRESTAR DEL LADO DERECHO
+            aux1 = ln.rightSibling;
+            if ((aux1.numPairs > aux1.minNumPairs + 1) && (aux1.parent == ln.parent)) {
+                System.out.println("presto derecho");
+                DictionaryPair[] dpsHermanoD = aux1.dictionary;//guarda diccionario de hermano
+                InternalNode parent2 = aux1.parent;//guarda padre
+                System.out.println(key + " el prestado: " + dpsHermanoD[0].key);
+                dpsLn[0] = dpsHermanoD[0];////el lugar que quedo donde se elimino el leafNode ahora es igual al primero del hermano derecho
+                //ahora hay que sustituir el que quedo en la posicion 0 al internal node por el siguiente key
+                parent2.sustituirKey(dpsHermanoD[0].key, dpsHermanoD[1].key);
+                parent2.sustituirKey(key, dpsHermanoD[0].key);//sustituye en el padre la llave que se quiere borrar por el primer key del hermano
+                //
+                //elimino el hermano que preste
+                int indexH = binarySearch(dpsHermanoD, aux1.numPairs, dpsHermanoD[0].key);//guarda el index del key para borrar
+                aux1.delete(indexH);//borra key
+                sortDictionary(dpsHermanoD);//ordena arreglo de nodos
+
+            }
+
+        }
+
+    }
+
+    public void susSimple(LeafNode hermano, LeafNode aux) {
         //jalar primera llave del hermano 
         DictionaryPair[] dps1 = hermano.dictionary;
         //guardar en el nodo que no hay nada la primmera llave del hermano
@@ -100,8 +175,6 @@ public class BPlusTree {
         //
 
     }
-
- 
 
     // Find the leaf node
     private LeafNode findLeafNode(InternalNode node, int key) {
@@ -483,80 +556,80 @@ public class BPlusTree {
             currNode = currNode.rightSibling;
         }
     }
-    public void printTree(){
-        if (root==null) {//el arbol solo tiene un nivel
+
+    public void printTree() {
+        if (root == null) {//el arbol solo tiene un nivel
             System.out.println(pritLeaf(this.firstLeaf));
-            
-        }else{
+
+        } else {
             System.out.println(pritInternal(root));
-             Node childNode = root.childPointers[0];
-             if (childNode instanceof LeafNode) {
-                 System.out.println(printLeaf((LeafNode)childNode));
-            }else{
-                 //el hijo es interno
-                 reTree(childNode);
-                 
-             }
-             
-            
+            Node childNode = root.childPointers[0];
+            if (childNode instanceof LeafNode) {
+                System.out.println(printLeaf((LeafNode) childNode));
+            } else {
+                //el hijo es interno
+                reTree(childNode);
+
+            }
+
         }
-    
-    
+
     }
-    private void reTree(Node x){
-        
-         if (x instanceof LeafNode) {
-                 System.out.println(printLeaf((LeafNode)x));
-            }else{
-                 //el hijo es interno
-                Node aux= printInternal((InternalNode)x);
-                 
-                reTree(aux);
-                 
-             }
+
+    private void reTree(Node x) {
+
+        if (x instanceof LeafNode) {
+            System.out.println(printLeaf((LeafNode) x));
+        } else {
+            //el hijo es interno
+            Node aux = printInternal((InternalNode) x);
+
+            reTree(aux);
+
+        }
     }
-    
-    private String printLeaf(LeafNode sheet){
-        String cadena="";
-         LeafNode currNode = sheet;
-        while(currNode!=null){
-            cadena= cadena + pritLeaf(currNode);
-            currNode=currNode.rightSibling;
-        }  
-    return cadena;
+
+    private String printLeaf(LeafNode sheet) {
+        String cadena = "";
+        LeafNode currNode = sheet;
+        while (currNode != null) {
+            cadena = cadena + pritLeaf(currNode);
+            currNode = currNode.rightSibling;
+        }
+        return cadena;
     }
-    
-    private String pritLeaf( LeafNode sheet){
-     String cadena="[";
-      DictionaryPair dps[] = sheet.dictionary;
+
+    private String pritLeaf(LeafNode sheet) {
+        String cadena = "[";
+        DictionaryPair dps[] = sheet.dictionary;
         for (int i = 0; i < sheet.numPairs; i++) {
-            cadena=cadena+ dps[i].key + "|" + dps[i].value + ","; 
+            cadena = cadena + dps[i].key + "|" + dps[i].value + ",";
         }
-        
-        return cadena=cadena+ "]";
+
+        return cadena = cadena + "]";
     }
-    
-    private Node printInternal(InternalNode internal){
-        String cadena="";
-        InternalNode currNode=internal;
-        while(currNode!=null){
-           cadena= cadena + pritInternal(currNode);
-           currNode=currNode.rightSibling;
+
+    private Node printInternal(InternalNode internal) {
+        String cadena = "";
+        InternalNode currNode = internal;
+        while (currNode != null) {
+            cadena = cadena + pritInternal(currNode);
+            currNode = currNode.rightSibling;
         }
-        
+
         Node childNode = internal.childPointers[0];
         System.out.println(cadena);
         return childNode;
 
     }
-    
-    private String pritInternal (InternalNode internal){
-        String cadena="[";
-        Integer[] key= internal.keys;
+
+    private String pritInternal(InternalNode internal) {
+        String cadena = "[";
+        Integer[] key = internal.keys;
         for (int i = 0; i < internal.degree; i++) {
-            cadena=cadena + key[i] + ",";
+            cadena = cadena + key[i] + ",";
         }
-        return cadena=cadena+ "]";
+        return cadena = cadena + "]";
     }
 
     public int height() {
@@ -586,7 +659,7 @@ public class BPlusTree {
 
     }
 
-    private int getLevel(int key, int lv) {
+    public int getLevel(int key, int lv) {
         //buscar si se encuentra en la raiz
         Integer[] keys = this.root.keys;
         int i;

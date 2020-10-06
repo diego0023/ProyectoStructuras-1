@@ -86,6 +86,7 @@ public class InternalNode extends Node {
             //System.out.println("key parent: "+this.keys[i]);
             if (this.keys[i] == key) {
                 this.keys[i] = key2;
+                break;
             }
         }
 

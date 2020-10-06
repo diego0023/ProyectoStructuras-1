@@ -25,6 +25,8 @@ public class LeafNode extends Node{
       numPairs--;
     }
     //
+    public void sustituirKeyLeafNode()
+    {}
     
     //inserta un valor
     public boolean insert(DictionaryPair dp) {
