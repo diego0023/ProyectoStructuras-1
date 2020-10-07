@@ -1,17 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package arbolbmas;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
-/**
- *
- * @author Diego
- */
 public class ArbolBmas {
 
     /**
@@ -25,7 +17,7 @@ public class ArbolBmas {
         System.out.println("4)NIVEL");
         System.out.println("5)BUSCAR CLAVE");
         System.out.println("6)BUSCAR NOMBRE");
-        System.out.println("7)ELIMINAR");//no existe, tal vez no exista nunca
+        System.out.println("7)ELIMINAR");
         System.out.println("8)SALIR");
         System.out.print("eliga una opcion");
 
@@ -50,7 +42,7 @@ public class ArbolBmas {
                 case 1:
                     System.out.println("ingrese un nombre");
                     nombre = entrada.nextLine();
-                    System.out.println("ingrese la calve");
+                    System.out.println("ingrese la clave");
                     key = Integer.parseInt(entrada.nextLine());
                     tree.insert(key, nombre);
 
@@ -98,7 +90,7 @@ public class ArbolBmas {
                 case 7:
                     System.out.println("Ingreese la clave a eliminar");
                     clave = Integer.parseInt(entrada.nextLine());
-                    tree.otro(clave,tree.getLevel(clave, 1));
+                    tree.eliminar(clave);
 
                     break;
                 case 8:

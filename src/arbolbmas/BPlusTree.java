@@ -9,10 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
-/**
- *
- * @author Diego
- */
 public class BPlusTree {
 
     int m;//grado del arbol
@@ -53,37 +49,77 @@ public class BPlusTree {
     }
     ///pruebas
 
-    public void otro(int key,int nivel) {
+    public void eliminar(int key) {
+
+        if (firstLeaf.rightSibling != null) {
+
+            otro(key, getLevel(key, 1));
+        } else {
+
+            DictionaryPair[] dps = this.firstLeaf.dictionary;
+            int index = binarySearch(dps, firstLeaf.numPairs, key);
+            firstLeaf.delete(index);
+            sortDictionary(dps);
+
+        }
+    }
+
+    public void otro(int key, int nivel) {
         LeafNode ln = (this.root == null) ? this.firstLeaf : findLeafNode(key);
-        ///ELIMINAR CASO 1
+        ///ELIMINAR CASO 1 ES HOJA----------------------------------------------------------------------------------
         if (isHoja(ln, key) == true) {
             DictionaryPair[] dps = ln.dictionary;
             int index = binarySearch(dps, ln.numPairs, key);
-
+            /////////////////////////////////CASO1(1)el nodo tiene mas del minNumPairs
             if (ln.numPairs > (ln.minNumPairs) + 1) {
+                System.out.println("ENTRO CASO 1_1");
+                ln.delete(index);
+                sortDictionary(dps);
+            } //CASO 1(2)
+            else if (ln.numPairs == (ln.minNumPairs + 1)) {
 
-                ln.delete(index);
-                sortDictionary(dps);
-                System.out.println("Eliminado, era hoja normal");
-            } else if(ln.numPairs == (ln.minNumPairs) + 1){
-                //primero eliminar llave
-                ln.delete(index);
-                sortDictionary(dps);
-                //ver si tiene hermano derecho o izquierdo
-                if ((ln.rightSibling != null)&&(ln.parent==ln.rightSibling.parent)) {
-                    susSimple(ln.rightSibling, ln);
+                ///CASO 1(2) ALGUNOS DE LOS HERMANOS DEL NODO LE PUEDE PRESTAR
+                if ((ln.rightSibling.isLendable2() == true) && (ln.leftSibling.isLendable2() == true)) {
+                    System.out.println("ENTRO CASO 1_2");
+                    //primero eliminar llave
+                    ln.delete(index);
+                    sortDictionary(dps);
+                    //ver si tiene hermano derecho o izquierdo
+                    if ((ln.rightSibling != null) && (ln.parent == ln.rightSibling.parent)) {
+                        susSimple(ln.rightSibling, ln);
+                    } else {
+                        susSimple(ln.rightSibling, ln);
+                    }
+                    System.out.println("Eliminado, con sustitucion");
                 } else {
-                    susSimple(ln.rightSibling, ln);
+                    //CASO 1(2) NINGUN HERMANO PUEDE PRESTAR HAY QUE ELIMINAR EL NODO
+                    System.out.println("ENTRO CASO 1_3");
+                    //eliminar conecciones del LEAFNODE
+                    LeafNode hermanoD = ln.rightSibling;
+                    LeafNode hermanoI = ln.leftSibling;
+                    if (hermanoI != null) {
+                        hermanoI.rightSibling = hermanoD;
+                    }// el hermano derecho del hermano izquierdo ahora es el hermano derecho del eliminado
+                    if (hermanoD != null) {
+                        hermanoD.leftSibling = hermanoI;
+                    }// el hermano izquierdo  del hermano derecho del elminado ahora es ell hermano izquierdo
+                    //eliminar pointers de parent
+                    InternalNode parent1 = ln.parent;
+                    int puntero = findIndexOfPointer(parent1.childPointers, ln);//puntero del nodo
+                    if (ln == firstLeaf) {
+                        firstLeaf = hermanoD;
+                    }
+                    parent1.removePointer1(puntero);
                 }
-                System.out.println("Eliminado, con sustitucion");
 
-            }else if (ln.numPairs < (ln.minNumPairs) + 1) {
-                System.out.println("todavia no existe ese metodo");
             }
-            
-        } //CASO 2
+
+        } //CASO 2 no es hoja--------------------------------------------------------------------------------------------------------
         else if ((isHoja(ln, key) == false) && (ln.numPairs >= ln.minNumPairs + 1)) {
-            if ((ln.numPairs > ln.minNumPairs + 1)&&(nivel>1)) {
+            System.out.println("entro a caso dos ");
+            //CASO 2.1 El nodo tiene mas del minimo y no se encuntra en la raiz
+            if ((ln.numPairs > ln.minNumPairs + 1) && (nivel > 1)) {
+                System.out.println("entro a caso dos .1");
                 System.out.println("keys: " + ln.numPairs);
                 //eliminar llave
                 DictionaryPair[] dps = ln.dictionary;
@@ -94,27 +130,115 @@ public class BPlusTree {
                 InternalNode parent2 = ln.parent;
                 parent2.sustituirKey(key, dps[0].key);
 
-            } else if (ln.numPairs == (ln.minNumPairs) + 1) {
-                //eliminar llave
+            }//CASO 2.2  tiene exactamente el minimo de claves y no se encuetra en la raiz
+            else if ((ln.numPairs == (ln.minNumPairs) + 1) && (nivel != 1)) {
+                System.out.println("entro a caso dos .2");
+                //mandar dicionario
                 DictionaryPair[] dps = ln.dictionary;
-
-                //
-                eliminar2_2(ln, key, dps);
-            }else if ((ln.numPairs > ln.minNumPairs + 1)&&(nivel==1)) {
-                System.out.println("todavia no existe ese metodo");
-                //eliminar llave
-//                DictionaryPair[] dps = ln.dictionary;
-//                int index = binarySearch(dps, ln.numPairs, key);
-//                ln.delete(index);
-//                sortDictionary(dps);
-//                //
-//                handleDeficiency(ln.parent);
+                //si ninguno de los hermano puede prestar
+                if ((ln.rightSibling.isLendable2() == false) && (ln.leftSibling.isLendable2() == false)) {
+                    //eliminar3(ln, key, dps);
+                    System.out.println("todavia no existe ese metodo");
+                } else {
+                    eliminar2_2(ln, key, dps);
+                }
+            }//CASO 2.3 el nodo tiene mas o igual claves al minimo de claves y si se encuentra en la raiz
+            else if ((ln.numPairs >= ln.minNumPairs + 1) && (nivel == 1)) {
+                DictionaryPair[] dps = ln.dictionary;
+                System.out.println("entro a caso dos .3");
+                eliminar2_3(ln, key, dps);
             }
 
-        }else if ((isHoja(ln, key) == false) && (ln.numPairs < ln.minNumPairs + 1)) {
+        } else if ((isHoja(ln, key) == false) && (ln.numPairs < ln.minNumPairs + 1)) {
             System.out.println("todavia no existe ese metodo");
         }
         ////////////////////////////////////////
+
+    }
+
+    public void eliminar3(LeafNode ln, int key, DictionaryPair[] dpsLn) {
+        //eliminar leafNode
+        if (ln != firstLeaf) {
+            InternalNode parent1 = ln.parent;
+            LeafNode hermanoL = ln.leftSibling;
+            DictionaryPair[] dps1 = hermanoL.dictionary;
+            //eliminar nodo
+            int index = binarySearch(dpsLn, ln.numPairs, key);
+            ln.delete(index);
+            sortDictionary(dpsLn);
+            //eliminar pointers de la raiz
+            int puntero = root.findIndexOfPointer(parent1);//puntero de la raiz al padre
+            root.removePointer(parent1);
+            //
+            InternalNode nuevaRaiz = hermanoL.leftSibling.parent;
+            root = nuevaRaiz;
+            root.keys[1] = dps1[0].key;
+
+        } else {
+            firstLeaf = ln.rightSibling;
+            LeafNode hermanoD = ln.rightSibling;
+            LeafNode hermanoI = ln.leftSibling;
+            if (hermanoI != null) {
+                hermanoI.rightSibling = hermanoD;
+            }// el hermano derecho del hermano izquierdo ahora es el hermano derecho del eliminado
+            if (hermanoD != null) {
+                hermanoD.leftSibling = hermanoI;
+            }// el hermano izquierdo  del hermano derecho del elminado ahora es ell hermano izquierdo
+        }
+    }
+
+    public void eliminar2_3(LeafNode ln, int key, DictionaryPair[] dpsLn) {
+        ////// (1)  Cuando el nodo tiene mas que minNumPairs y tambien se encuentra en la raiz
+        if (ln.numPairs > ln.minNumPairs + 1) {
+            System.out.println("ELIMINAR SI ESTA EN RAIZ Y TIENE MAS DEL MINIMO DE LLAVES");
+            //eliminar llave
+            DictionaryPair[] dps = ln.dictionary;
+            int index = binarySearch(dps, ln.numPairs, key);
+            ln.delete(index);
+            sortDictionary(dps);
+            //sustituir key que se quiere elminar de root por el que quedo en el primer lugar de LeafNode
+            InternalNode raiz = this.root;
+            raiz.sustituirKey(key, dps[0].key);
+        }//
+        ////(2) cuando el que se quiere eliminar tiene el minimo de claves
+        //// y al que le debe prestar(el hermano) tiene MAS del minimo de claves
+        else if ((ln.numPairs == ln.minNumPairs + 1) && (ln.rightSibling.numPairs > ln.rightSibling.minNumPairs + 1)) {
+            System.out.println("ELIMINAR SI ESTA EN RAIZ Y TIENE EL MINIMO DE LLAVES Y EL HERMANO PUEDE PRESTAR");
+            LeafNode hermanoD = ln.rightSibling;//guarda el hermnao derecho
+            DictionaryPair[] dpsH = hermanoD.dictionary;//guarda el diccionario del hermano
+            //key que se quiere eliminar se convierte en el primero del hermano derecho
+            dpsLn[0] = dpsH[0];
+            //sustituir key que se quiere elminar de root por el que quedo en el primer lugar de LeafNode que quedo
+            InternalNode raiz = this.root;
+            raiz.sustituirKey(key, dpsLn[0].key);
+            //sustituir key que quedo en el internal node por segunda key del hermano
+            InternalNode parent1 = ln.parent;
+            parent1.sustituirKey(dpsH[0].key, dpsH[1].key);
+            //finalmente se elimna el key prestado del hermano
+            int index = binarySearch(dpsH, hermanoD.numPairs, dpsH[0].key);
+            hermanoD.delete(index);
+            sortDictionary(dpsH);
+
+        } ////(3)cuando el nodo tiene el minimo numero de claves y el hermano tambien tiene el numero mínimo de claves
+        else if ((ln.numPairs == ln.minNumPairs + 1) && (ln.rightSibling.numPairs == ln.rightSibling.minNumPairs + 1)) {
+            System.out.println("ELIMINAR SI ESTA EN RAIZ Y TIENE EL MINIMO DE LLAVES Y EL HERMANO NOO PUEDE PRESTAR");
+            LeafNode hermanoD = ln.rightSibling;//guarda el hermnao derecho
+            DictionaryPair[] dpsH = hermanoD.dictionary;//guarda el diccionario del hermano
+            //key que se quiere eliminar se convierte en el primero del hermano derecho
+            dpsLn[0] = dpsH[0];
+            //PRIMERA KEY DEL PARENT SE PASA A ROOT
+            InternalNode parent1 = ln.parent;//guarda parent
+            this.root.sustituirKey(key, parent1.keys[0]);//sustituye key a eliminar por primera key del internalNode
+            //eliminar primera key del parent
+            parent1.removeKey(0);
+            //eliminar CONEXION nodo hermanno (se supone que ya no tiene nada)
+            if (hermanoD.rightSibling != null) {
+                ln.rightSibling = hermanoD.rightSibling; //ahora el hermano derecho del nodo es el hermano derecho del eliminado
+                hermanoD.leftSibling = ln;//
+            }
+            //eliminar child pointer
+            parent1.removePointer(0);//elimina el pointer del hermano del que se elimino 
+        }
 
     }
 

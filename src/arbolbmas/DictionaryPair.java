@@ -1,14 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package arbolbmas;
 
-/**
- *
- * @author Diego
- */
 public class DictionaryPair  implements Comparable<DictionaryPair> {
       //cada slot tiene una clave y un nombre 
     int key;

@@ -1,14 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package arbolbmas;
 
-/**
- *
- * @author Diego
- */
+import java.util.Arrays;
+
 public class InternalNode extends Node {
 
     //parecido a un nodo hoja pero el nodo interno tiene hijos
@@ -37,7 +31,8 @@ public class InternalNode extends Node {
         return -1;
     }
     //se incerta un hijo nuevo
-
+//
+    
     void insertChildPointer(Node pointer, int index) {
         for (int i = degree - 1; i >= index; i--) {
             childPointers[i + 1] = childPointers[i];
@@ -77,6 +72,31 @@ public class InternalNode extends Node {
 
     public void removeKey(int index) {
         this.keys[index] = null;
+        contK(this.keys);
+//        Arrays.sort(this.keys);
+//        System.out.println(Arrays.toString(this.keys));
+//        this.keys = removeNulls(this.keys);
+//        recorrer();
+
+    }
+
+    private Node[] removeNulls(Node[] strs) {
+        int contNulls = 0;
+        for (int i = 0; i < this.childPointers.length; i++) {
+            if (this.childPointers[i] == null) {
+                contNulls++;
+            }
+        }
+        Node[] nullsRemoved = new Node[childPointers.length - contNulls];
+
+        for (int i = 0, j = 0; i < childPointers.length; i++) {
+
+            if (childPointers[i] != null) {
+                nullsRemoved[j] = childPointers[i];
+                j++;
+            }
+        }
+        return nullsRemoved;
     }
 
     public void sustituirKey(int key, int key2) {
@@ -93,8 +113,7 @@ public class InternalNode extends Node {
     }
 
     public void recorrer() {
-        contK(this.keys);
-        for (int i = 0; i < cont; i++) {
+        for (int i = 0; i < this.keys.length; i++) {
             System.out.println("key parent: " + this.keys[i]);
 
         }
@@ -104,6 +123,13 @@ public class InternalNode extends Node {
     public void removePointer(int index) {
         this.childPointers[index] = null;
         this.degree--;
+    }
+//borrar nulls caso especial
+
+    public void removePointer1(int index) {
+        this.childPointers[index] = null;
+        this.degree--;
+        this.childPointers = removeNulls(this.childPointers);
     }
 
     void removePointer(Node pointer) {
@@ -143,6 +169,7 @@ public class InternalNode extends Node {
     }
 
     private void contK(Integer[] k) {
+        cont = 0;
 
         for (int i = 0; i < k.length; i++) {
             if (k[i] != null) {
